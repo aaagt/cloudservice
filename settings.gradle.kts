@@ -1,11 +1,3 @@
-rootProject.name = "name"
+rootProject.name = "cloudservice"
 
-
-pluginManagement {
-    plugins {
-        id("jvm")
-    }
-}
-
-
-include("task1")
+include(":backend:app-spring")

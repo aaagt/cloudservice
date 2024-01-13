@@ -1,0 +1,4 @@
+databaseChangeLog:
+    -   include:
+            file: 'migrations/1.0.0/1-create-cloudservice-schema.sql'
+            relativeToChangeLogFile: true

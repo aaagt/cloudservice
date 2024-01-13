@@ -2,6 +2,7 @@
 
 # Структура проекта
 
+- [backend](./backend) - Бэкенд
 - [frontend](./frontend) - Фронтенд
 - [specs](./specs) - Спецификации
 
