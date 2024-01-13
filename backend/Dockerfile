@@ -21,7 +21,7 @@ FROM bellsoft/liberica-openjdk-alpine:17 as production-stage
 WORKDIR /app
 
 # Copy the built application from the builder stage
-COPY --from=build-stage /app/backend/app-spring/build/libs/app-spring-1.0.0.jar app.jar
+COPY --from=build-stage /app/backend/app-spring/build/libs/app.jar app.jar
 
 # Expose the application port
 EXPOSE 8080

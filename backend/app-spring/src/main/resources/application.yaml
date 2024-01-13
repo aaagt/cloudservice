@@ -1,17 +1,23 @@
 spring:
-    datasource:
-        url: jdbc:postgresql://${CLOUDSERVICE_DB_HOST}:${CLOUDSERVICE_DB_PORT}/${CLOUDSERVICE_DB_NAME}
-        username: ${CLOUDSERVICE_DB_USERNAME}
-        password: ${CLOUDSERVICE_DB_PASSWORD}
-        driverClassName: org.postgresql.Driver
-    jpa:
-        open-in-view: false
-        show-sql: true
-        properties:
-            hibernate.jdbc.time_zone: UTC
-            hibernate.format_sql: true
+  datasource:
+    url: jdbc:postgresql://${CLOUDSERVICE_DB_HOST:localhost}:${CLOUDSERVICE_DB_PORT:5432}/${CLOUDSERVICE_DB_NAME:cloudservice}
+    username: ${CLOUDSERVICE_DB_USERNAME:postgres}
+    password: ${CLOUDSERVICE_DB_PASSWORD:postgres}
+    driverClassName: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate.jdbc.time_zone: UTC
+      hibernate.format_sql: true
+  liquibase:
+    enabled: true
+    drop-first: false
+    #        change-log: classpath:db/db.changelog-master.yaml
+    default-schema: public
+
 logging:
-    level:
-        org:
-            springframework:
-                security: debug
+  level:
+    org:
+      springframework:
+        security: debug
