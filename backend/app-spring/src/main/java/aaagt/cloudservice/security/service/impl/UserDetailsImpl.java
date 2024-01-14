@@ -1,4 +1,4 @@
-package aaagt.cloudservice.security.dto;
+package aaagt.cloudservice.security.service.impl;
 
 import aaagt.cloudservice.security.entity.User;
 import org.springframework.security.core.GrantedAuthority;
@@ -6,10 +6,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-public class UserDetailsDto implements UserDetails {
+public class UserDetailsImpl implements UserDetails {
     private final User user;
 
-    public UserDetailsDto(User user) {
+    public UserDetailsImpl(User user) {
         this.user = user;
     }
 

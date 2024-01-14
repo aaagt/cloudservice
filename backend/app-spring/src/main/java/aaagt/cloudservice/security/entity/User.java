@@ -2,6 +2,7 @@ package aaagt.cloudservice.security.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.util.Set;
 
 @Getter
@@ -21,7 +23,7 @@ import java.util.Set;
 @Entity
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(schema = "security", name = "user_accounts")
-public class User {
+public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +35,7 @@ public class User {
     @Column(nullable = false)
     String password;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             schema = "security",
             name = "user_accounts_roles",

@@ -2,7 +2,9 @@ package aaagt.cloudservice.security.config;
 
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -14,10 +16,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-                /*.sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))*/
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        /*.requestMatchers("/").permitAll()
+                        .requestMatchers("/").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/logout").authenticated()
@@ -25,12 +27,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/file").authenticated()
                         .requestMatchers(HttpMethod.GET, "/file").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/file").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/list").authenticated()*/
+                        .requestMatchers(HttpMethod.GET, "/list").authenticated()
                         .anyRequest().permitAll()
                 )
                 .formLogin(withDefaults())
-                .logout(withDefaults())/*
-                .httpBasic(withDefaults())*/;
+                .logout(withDefaults())
+                .httpBasic(withDefaults());
         return http.build();
     }
 

@@ -53,8 +53,8 @@ VALUES (1, 'ROLE_USER'),
 
 --changeset aaagt:insert-users
 INSERT INTO security.user_accounts(id, username, password)
-VALUES (1, 'user', 'password'),
-       (2, 'admin', 'password');
+VALUES (1, 'user', '{noop}password'),
+       (2, 'admin', '{noop}password');
 --rollback TRUNCATE TABLE security.user_accounts;
 
 --changeset aaagt:insert-user_accounts_roles
