@@ -1,6 +1,6 @@
-package aaagt.cloudservice.security.repository;
+package aaagt.cloudservice.user.repository;
 
-import aaagt.cloudservice.security.entity.User;
+import aaagt.cloudservice.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package aaagt.cloudservice.security.entity;
+package aaagt.cloudservice.user.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,4 +1,4 @@
-package aaagt.cloudservice.security.entity;
+package aaagt.cloudservice.user.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
