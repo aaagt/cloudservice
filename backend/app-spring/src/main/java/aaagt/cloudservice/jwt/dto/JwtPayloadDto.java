@@ -1,4 +1,9 @@
 package aaagt.cloudservice.jwt.dto;
 
-public record JwtPayloadDto(String subject) {
-}
+import java.time.Instant;
+
+public record JwtPayloadDto(
+        String subject,
+        Instant issuedAt,
+        Instant expireAt
+) {}

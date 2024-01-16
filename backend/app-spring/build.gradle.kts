@@ -38,6 +38,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.auth0/java-jwt
     implementation("com.auth0:java-jwt:4.4.0")
+
+    // https://mvnrepository.com/artifact/org.mockito/mockito-core
+    testImplementation("org.mockito:mockito-core:5.9.0")
 }
 
 tasks.withType<Test> {

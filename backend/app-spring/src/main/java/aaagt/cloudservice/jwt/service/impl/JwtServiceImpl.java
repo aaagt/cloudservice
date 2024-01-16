@@ -8,29 +8,33 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Log4j2
+@Service
 public class JwtServiceImpl implements JwtService {
 
     private final JWTVerifier verifier;
+
     private final Algorithm jwtAlgorithm;
 
-    @NestedConfigurationProperty
-    public JwtProperties properties;
+    private final JwtProperties properties;
 
-    public JwtServiceImpl(JWTVerifier verifier, Algorithm jwtAlgorithm) {
+    public JwtServiceImpl(JWTVerifier verifier,
+                          Algorithm jwtAlgorithm,
+                          JwtProperties properties) {
         this.verifier = verifier;
         this.jwtAlgorithm = jwtAlgorithm;
+        this.properties = properties;
     }
 
     @Override
     public String generateToken(JwtPayloadDto payload) {
-        Instant issuedAt = Instant.now();
-        Instant expireAt = Instant.now().plus(this.properties.getTokenExpiry());
+        Instant issuedAt = payload.issuedAt() == null ? Instant.now() : payload.issuedAt();
+        Instant expireAt = payload.expireAt() == null ? Instant.now().plus(this.properties.tokenExpiry()) : payload.expireAt();
         return JWT.create()
                 .withJWTId(UUID.randomUUID().toString())
                 .withSubject(payload.subject())
@@ -41,7 +45,7 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String getSubjectFromJWT(String token) {
-        return null;
+        return JWT.decode(token).getSubject();
     }
 
     @Override
@@ -54,4 +58,5 @@ public class JwtServiceImpl implements JwtService {
         }
         return true;
     }
+
 }
