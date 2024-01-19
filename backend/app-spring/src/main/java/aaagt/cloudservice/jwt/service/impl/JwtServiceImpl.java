@@ -33,13 +33,18 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String generateToken(JwtPayloadDto payload) {
-        Instant issuedAt = payload.issuedAt() == null ? Instant.now() : payload.issuedAt();
-        Instant expireAt = payload.expireAt() == null ? Instant.now().plus(this.properties.tokenExpiry()) : payload.expireAt();
+        Instant issuedAt = payload.issuedAt()
+                .orElse(Instant.now());
+
+        Instant expireAt = payload.expireAt()
+                .orElse(Instant.now().plus(this.properties.tokenExpiry()));
+
         return JWT.create()
                 .withJWTId(UUID.randomUUID().toString())
                 .withSubject(payload.subject())
                 .withIssuedAt(issuedAt)
                 .withExpiresAt(expireAt)
+                .withIssuer(properties.tokenIssuer())
                 .sign(jwtAlgorithm);
     }
 
