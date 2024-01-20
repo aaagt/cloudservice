@@ -62,3 +62,19 @@ INSERT INTO security.user_accounts_roles(user_account_id, user_role_id)
 VALUES (1, 1),
        (2, 2);
 --rollback TRUNCATE TABLE security.user_accounts_roles;
+
+--changeset aaagt:create-table-security.user_tokens
+CREATE TABLE security.user_tokens
+(
+    id              serial primary key,
+    token           varchar unique not null,
+    revoked         boolean not null,
+    user_account_id integer not null
+);
+--rollback DROP TABLE security.user_tokens;
+
+--changeset aaagt:create-user_tokens-constraints
+ALTER TABLE security.user_tokens
+    ADD CONSTRAINT user_tokens__user_accounts__fk
+        FOREIGN KEY (user_account_id) REFERENCES security.user_accounts(id);
+--rollback ALTER TABLE security.user_tokens DROP CONSTRAINT user_tokens__user_accounts__fk;

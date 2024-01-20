@@ -40,13 +40,12 @@ public class LoginController {
         );
         Authentication authentication = authenticationManager.authenticate(authToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtService.generateToken(
-                new JwtPayloadDto(
-                        authentication.getName(),
-                        Optional.empty(),
-                        Optional.empty()
-                )
+        var payload = new JwtPayloadDto(
+                authentication.getName(),
+                Optional.empty(),
+                Optional.empty()
         );
+        String token = jwtService.generateToken(payload);
         return new ResponseEntity<>(new LoginResponseDto(token), HttpStatus.OK);
     }
 
