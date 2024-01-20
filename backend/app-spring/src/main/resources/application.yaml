@@ -20,6 +20,12 @@ spring:
 
 logging:
   level:
+    aaagt:
+      cloudservice:
+        security:
+          config:
+            authentication: debug
+          handler: debug
     org:
       springframework:
         security: debug

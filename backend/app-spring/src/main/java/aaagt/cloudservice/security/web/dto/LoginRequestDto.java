@@ -1,4 +1,4 @@
-package aaagt.cloudservice.security.dto;
+package aaagt.cloudservice.security.web.dto;
 
 import lombok.Data;
 

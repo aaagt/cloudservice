@@ -54,14 +54,14 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public boolean validateToken(String jwtToken) throws JWTVerificationException {
+    public boolean isTokenNotValid(String jwtToken) throws JWTVerificationException {
         try {
             verifier.verify(jwtToken);
         } catch (JWTVerificationException e) {
             log.info("JWTVerificationException", e);
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
 }

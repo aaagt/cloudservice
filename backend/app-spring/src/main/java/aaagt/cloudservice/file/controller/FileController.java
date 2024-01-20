@@ -1,5 +1,7 @@
 package aaagt.cloudservice.file.controller;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,7 +23,9 @@ public class FileController {
 
     @GetMapping("/file")
     public String getFile() {
-        return "get file";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        return "get file to " + currentPrincipalName;
     }
 
     @PutMapping("/file")

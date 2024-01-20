@@ -7,5 +7,5 @@ public interface JwtService {
 
     String getSubjectFromJWT(String token);
 
-    boolean validateToken(String token);
+    boolean isTokenNotValid(String token);
 }

@@ -37,6 +37,6 @@ public class UserToken {
     String token;
 
     @Column(nullable = false)
-    Boolean revoked;
+    boolean revoked;
 
 }
