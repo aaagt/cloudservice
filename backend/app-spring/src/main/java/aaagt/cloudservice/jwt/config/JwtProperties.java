@@ -1,6 +1,7 @@
 package aaagt.cloudservice.jwt.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.boot.convert.DurationUnit;
 
 import java.time.Duration;
@@ -11,4 +12,9 @@ public record JwtProperties(
         String tokenIssuer,
         String tokenSecret,
         @DurationUnit(ChronoUnit.SECONDS) Duration tokenExpiry
-) {}
+) {
+
+    @ConstructorBinding
+    public JwtProperties {}
+
+}

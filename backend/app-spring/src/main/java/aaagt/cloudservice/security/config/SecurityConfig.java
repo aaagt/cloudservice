@@ -5,7 +5,6 @@ import aaagt.cloudservice.security.config.authentication.JwtAuthenticationEntryP
 import aaagt.cloudservice.security.config.authentication.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -27,7 +26,6 @@ import java.util.Collections;
 
 @Configuration
 @RequiredArgsConstructor
-@ComponentScan(basePackages = {"aaagt.cloudservice"})
 public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {

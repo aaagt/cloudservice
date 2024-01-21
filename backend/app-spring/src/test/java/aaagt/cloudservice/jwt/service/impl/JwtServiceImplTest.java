@@ -1,5 +1,6 @@
 package aaagt.cloudservice.jwt.service.impl;
 
+import aaagt.cloudservice.App;
 import aaagt.cloudservice.jwt.config.JwtProperties;
 import aaagt.cloudservice.jwt.dto.JwtPayloadDto;
 import com.auth0.jwt.JWT;
@@ -10,11 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(classes = {aaagt.cloudservice.app.App.class})
+@SpringBootTest(classes = {App.class})
 class JwtServiceImplTest {
 
     private static final Logger log = Logger.getLogger(JwtServiceImplTest.class.getName());
@@ -38,7 +40,10 @@ class JwtServiceImplTest {
         long milliseconds = 999999000;
         Instant issuedAt = Instant.ofEpochMilli(milliseconds);
         Instant expireAt = Instant.ofEpochMilli(milliseconds).plus(this.jwtProperties.tokenExpiry());
-        var payload = new JwtPayloadDto("test subject", issuedAt, expireAt);
+        var payload = new JwtPayloadDto(
+                "test subject",
+                Optional.of(issuedAt),
+                Optional.of(expireAt));
         var token = jwtService.generateToken(payload);
         var expected = "test subject";
         log.info("Token: " + token);

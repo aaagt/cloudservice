@@ -3,17 +3,15 @@ package aaagt.cloudservice.jwt.config;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@RequiredArgsConstructor
 public class JwtConfig {
 
-    public JwtProperties properties;
-
-    public JwtConfig(final JwtProperties properties) {
-        this.properties = properties;
-    }
+    public final JwtProperties properties;
 
     @Bean
     public JWTVerifier jwtVerifier(final Algorithm algorithm) {
