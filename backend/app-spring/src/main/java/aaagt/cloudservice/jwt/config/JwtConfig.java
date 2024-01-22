@@ -1,5 +1,7 @@
 package aaagt.cloudservice.jwt.config;
 
+import aaagt.cloudservice.jwt.service.JwtService;
+import aaagt.cloudservice.jwt.service.impl.JwtServiceImpl;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.JWTVerifier;
@@ -12,6 +14,11 @@ import org.springframework.context.annotation.Configuration;
 public class JwtConfig {
 
     public final JwtProperties properties;
+
+    @Bean
+    public JwtService jwtService(final JWTVerifier verifier, final Algorithm algorithm) {
+        return new JwtServiceImpl(verifier, algorithm, properties);
+    }
 
     @Bean
     public JWTVerifier jwtVerifier(final Algorithm algorithm) {

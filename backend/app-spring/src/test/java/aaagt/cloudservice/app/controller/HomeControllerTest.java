@@ -1,4 +1,4 @@
-package aaagt.cloudservice.security.web;
+package aaagt.cloudservice.app.controller;
 
 import aaagt.cloudservice.App;
 import aaagt.cloudservice.app.HomeController;
@@ -7,6 +7,7 @@ import aaagt.cloudservice.jwt.config.JwtProperties;
 import aaagt.cloudservice.security.config.SecurityConfig;
 import aaagt.cloudservice.security.config.authentication.JwtAuthenticationEntryPoint;
 import aaagt.cloudservice.security.config.authentication.JwtAuthenticationFilter;
+import aaagt.cloudservice.security.web.LoginService;
 import aaagt.cloudservice.user.repository.UserRepository;
 import aaagt.cloudservice.user.repository.UserTokenRepository;
 import org.junit.jupiter.api.Test;
@@ -15,26 +16,26 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Import({
         SecurityConfig.class,
         JwtConfig.class,
         JwtAuthenticationEntryPoint.class,
-        JwtAuthenticationFilter.class})
-@WebMvcTest(controllers = {LoginController.class, HomeController.class})
+        JwtAuthenticationFilter.class
+})
+@WebMvcTest(controllers = {HomeController.class})
 @ContextConfiguration(classes = {App.class})
 @EnableConfigurationProperties(value = JwtProperties.class)
-class LoginControllerTest {
+class HomeControllerTest {
 
     @Autowired
     MockMvc mvc;
@@ -55,42 +56,18 @@ class LoginControllerTest {
     private UserTokenRepository userTokenRepository;
 
     @Test
-    void login_WhenNoCredentials_ThenBadRequest() throws Exception {
-        this.mvc.perform(post("/login"))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.message").value("Bad credentials"))
-                .andExpect(jsonPath("$.id").value(1));
+    void home_WhenAnonymous_ThenStatusIsOk() throws Exception {
+        this.mvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("hello anonimous user"));
     }
 
     @Test
-    void login_WhenUser_ThenReturnToken() throws Exception {
-        this.mvc.perform(post("/login"))
+    @WithMockUser(username = "mockUser")
+    void home_WhenUser_ThenHelloUsername() throws Exception {
+        this.mvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.message").value("Bad credentials"))
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(content().string("hello mockUser"));
     }
-
-   /* @Test
-    void 토큰을_생성한다() {
-        //given
-        given(loginService.createToken(any()))
-                .willReturn(TokenResponse.of(accessToken));
-
-        //when
-        TokenRequest params = new TokenRequest(GithubResponses.소롱.getCode());
-        ValidatableMockMvcResponse response = given
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(params)
-                .when().post("/login/token")
-                .then().log().all();
-
-        //then
-        response.expect(status().isOk());
-
-        //docs
-        response.apply(document("login/token"));
-    }*/
 
 }

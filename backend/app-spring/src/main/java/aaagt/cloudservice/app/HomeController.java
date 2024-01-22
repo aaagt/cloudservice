@@ -1,4 +1,4 @@
-package aaagt.cloudservice.app.controller;
+package aaagt.cloudservice.app;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
