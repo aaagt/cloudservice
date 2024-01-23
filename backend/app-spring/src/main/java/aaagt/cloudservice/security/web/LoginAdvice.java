@@ -16,7 +16,7 @@ public class LoginAdvice {
         System.out.println(exception.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponseDto(exception.getMessage(), 1));
+                .body(new ErrorResponseDto("Bad credentials", 1));
     }
 
     @ExceptionHandler(BadCredentialsException.class)

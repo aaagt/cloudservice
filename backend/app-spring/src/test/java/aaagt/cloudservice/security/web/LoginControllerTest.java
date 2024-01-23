@@ -7,9 +7,11 @@ import aaagt.cloudservice.jwt.config.JwtProperties;
 import aaagt.cloudservice.security.config.SecurityConfig;
 import aaagt.cloudservice.security.config.authentication.JwtAuthenticationEntryPoint;
 import aaagt.cloudservice.security.config.authentication.JwtAuthenticationFilter;
+import aaagt.cloudservice.security.web.dto.LoginRequestDto;
 import aaagt.cloudservice.user.repository.UserRepository;
 import aaagt.cloudservice.user.repository.UserTokenRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -17,6 +19,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -65,32 +68,46 @@ class LoginControllerTest {
 
     @Test
     void login_WhenUser_ThenReturnToken() throws Exception {
-        this.mvc.perform(post("/login"))
+        var body = """
+                {
+                	"login": "mockedUser",
+                	"password": "password"
+                }
+                """;
+
+        Mockito.when(
+                this.loginService.login(new LoginRequestDto("mockedUser", "password"))
+        ).thenReturn("mocked token");
+
+        this.mvc.perform(post("/login")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(body))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.auth-token").value("mocked token"));
+    }
+
+
+    @Test
+    void login_WhenUserNotInBase_ThenBadRequest() throws Exception {
+        var body = """
+                {
+                	"login": "mockedUser",
+                	"password": "password"
+                }
+                """;
+
+        Mockito.when(
+                this.loginService.login(new LoginRequestDto("mockedUser", "password"))
+        ).thenThrow(new UsernameNotFoundException("mockedUser"));
+
+        this.mvc.perform(post("/login")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.message").value("Bad credentials"))
                 .andExpect(jsonPath("$.id").value(1));
     }
-
-   /* @Test
-    void 토큰을_생성한다() {
-        //given
-        given(loginService.createToken(any()))
-                .willReturn(TokenResponse.of(accessToken));
-
-        //when
-        TokenRequest params = new TokenRequest(GithubResponses.소롱.getCode());
-        ValidatableMockMvcResponse response = given
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(params)
-                .when().post("/login/token")
-                .then().log().all();
-
-        //then
-        response.expect(status().isOk());
-
-        //docs
-        response.apply(document("login/token"));
-    }*/
 
 }
