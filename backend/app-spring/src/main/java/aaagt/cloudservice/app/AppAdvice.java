@@ -8,11 +8,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class AppAdvice {
 
     /*@ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponseDto> hande(RuntimeException exception) {
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    public ResponseEntity<ErrorResponseDto> handleRuntimeException(RuntimeException exception) {
         log.error("Error:", exception);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponseDto(exception.getMessage(), 0));
+                .body(new ErrorResponseDto("Internal server error", 0));
+    }*/
+
+    /*@ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponseDto> handleAuthenticationException(RuntimeException exception) {
+        log.error("Error:", exception);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDto("Bad Credentials", 2));
     }*/
 
 }
