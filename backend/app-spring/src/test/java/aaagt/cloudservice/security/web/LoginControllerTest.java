@@ -30,12 +30,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Import({
-        SecurityConfig.class,
-        JwtConfig.class,
         JwtAuthenticationEntryPoint.class,
         JwtAuthenticationFilter.class})
-@WebMvcTest(controllers = {LoginController.class, HomeController.class})
-@ContextConfiguration(classes = {App.class})
+@WebMvcTest(controllers = {
+        LoginController.class,
+        HomeController.class})
+@ContextConfiguration(classes = {
+        App.class,
+        SecurityConfig.class,
+        JwtConfig.class})
 @EnableConfigurationProperties(value = JwtProperties.class)
 class LoginControllerTest {
 

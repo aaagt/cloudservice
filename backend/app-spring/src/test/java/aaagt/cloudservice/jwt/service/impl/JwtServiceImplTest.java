@@ -1,51 +1,39 @@
 package aaagt.cloudservice.jwt.service.impl;
 
-import aaagt.cloudservice.App;
 import aaagt.cloudservice.jwt.config.JwtConfig;
 import aaagt.cloudservice.jwt.config.JwtProperties;
 import aaagt.cloudservice.jwt.dto.JwtPayloadDto;
+import aaagt.cloudservice.jwt.service.JwtService;
 import com.auth0.jwt.JWT;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Import({JwtConfig.class})
-//@WebMvcTest(controllers = {LoginController.class, HomeController.class})
-@ContextConfiguration(classes = {App.class})
-@EnableConfigurationProperties(value = JwtProperties.class)
+@SpringBootTest
+@ContextConfiguration(classes = {JwtConfig.class})
+@EnableConfigurationProperties(value = {JwtProperties.class})
 class JwtServiceImplTest {
 
     private static final Logger log = Logger.getLogger(JwtServiceImplTest.class.getName());
 
     @Autowired
-    JwtServiceImpl jwtService;
-
-    @Autowired
-    JwtProperties jwtProperties;
-
-    @BeforeEach
-    void setUp() {
-    }
-
-    @AfterEach
-    void tearDown() {
-    }
+    JwtService jwtService;
 
     @Test
     void generateToken() {
         long milliseconds = 999999000;
         Instant issuedAt = Instant.ofEpochMilli(milliseconds);
-        Instant expireAt = Instant.ofEpochMilli(milliseconds).plus(this.jwtProperties.tokenExpiry());
+        Instant expireAt = Instant.ofEpochMilli(milliseconds)
+                .plus(Duration.ofMillis(10_000L));
         var payload = new JwtPayloadDto(
                 "test subject",
                 Optional.of(issuedAt),
@@ -55,13 +43,5 @@ class JwtServiceImplTest {
         log.info("Token: " + token);
         assertEquals(expected, JWT.decode(token).getSubject());
     }
-
-    /*@Test
-    void getSubjectFromJWT() {
-    }
-
-    @Test
-    void validateToken() {
-    }*/
 
 }
