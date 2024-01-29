@@ -36,3 +36,5 @@ aaagt:
       token-issuer: "aaagt"
       token-secret: "cloudservice-secret!"
       token-expiry: 300 # seconds
+    files:
+      upload-path: "./uploads/"

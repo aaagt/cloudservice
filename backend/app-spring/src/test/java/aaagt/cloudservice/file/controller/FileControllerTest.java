@@ -1,6 +1,7 @@
 package aaagt.cloudservice.file.controller;
 
 import aaagt.cloudservice.App;
+import aaagt.cloudservice.file.service.FileService;
 import aaagt.cloudservice.jwt.config.JwtConfig;
 import aaagt.cloudservice.jwt.config.JwtProperties;
 import aaagt.cloudservice.security.config.SecurityConfig;
@@ -18,11 +19,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.nio.charset.StandardCharsets;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,7 +38,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         SecurityConfig.class,
         JwtConfig.class,
         JwtAuthenticationEntryPoint.class,
-        JwtAuthenticationFilter.class})
+        JwtAuthenticationFilter.class,
+        FileService.class})
 @WebMvcTest(controllers = {FileController.class})
 @ContextConfiguration(classes = {App.class})
 @EnableConfigurationProperties(value = JwtProperties.class)
@@ -70,6 +77,38 @@ class FileControllerTest {
 
     @Test
     void putFile() {
+    }
+
+
+    @Nested
+    @DisplayName("File Controller - postFile")
+    class PostFileTests {
+
+        @Test
+        void postFile_WhenNoCredentials_ThenBadRequest() throws Exception {
+            mvc.perform(post("/file"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                    .andExpect(jsonPath("$.message").value("Bad credentials"))
+                    .andExpect(jsonPath("$.id").value(1));
+        }
+
+        @Test
+        @WithMockUser(username = "mockUser")
+        void postFile_WhenPostFile_ThenOK() throws Exception {
+            MockMultipartFile jsonFile = new MockMultipartFile("file", "",
+                    "application/json", "{}".getBytes());
+            String hash = "123";
+            String filename = "fff.json";
+
+            mvc.perform(multipart("/file")
+                            .file("hash", hash.getBytes(StandardCharsets.UTF_8))
+                            .file(jsonFile)
+                            .param("filename", filename)
+                    )
+                    .andExpect(status().isOk());
+        }
+
     }
 
 
