@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 @Slf4j
@@ -30,13 +31,15 @@ public class FileController {
     public void postFile(@RequestParam String filename,
                          @RequestPart("hash") String hash,
                          @RequestPart("file") MultipartFile file) throws IOException {
-        log.info(hash);
+        log.info("Creating file: {}, with hash: {}", filename, hash);
         fileService.createFile(filename, file);
     }
 
     @DeleteMapping("/file")
-    public String deleteFile() {
-        return "delete file";
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteFile(@RequestParam String filename) throws FileNotFoundException {
+        log.info("Deleting file: {}", filename);
+        fileService.deleteFile(filename);
     }
 
     @GetMapping("/file")

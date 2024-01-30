@@ -1,6 +1,7 @@
 package aaagt.cloudservice.file.controller;
 
 import aaagt.cloudservice.App;
+import aaagt.cloudservice.file.advice.FileAdvice;
 import aaagt.cloudservice.file.service.FileService;
 import aaagt.cloudservice.jwt.config.JwtConfig;
 import aaagt.cloudservice.jwt.config.JwtProperties;
@@ -26,8 +27,12 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -39,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         JwtConfig.class,
         JwtAuthenticationEntryPoint.class,
         JwtAuthenticationFilter.class,
-        FileService.class})
+        FileAdvice.class})
 @WebMvcTest(controllers = {FileController.class})
 @ContextConfiguration(classes = {App.class})
 @EnableConfigurationProperties(value = JwtProperties.class)
@@ -56,20 +61,12 @@ class FileControllerTest {
 
     @MockBean
     LogoutHandler logoutHandler;
-
+    @MockBean
+    FileService fileService;
     @MockBean
     private UserRepository userRepository;
-
     @MockBean
     private UserTokenRepository userTokenRepository;
-
-    @Test
-    void postFile() {
-    }
-
-    @Test
-    void deleteFile() {
-    }
 
     @Test
     void getFile() {
@@ -79,13 +76,66 @@ class FileControllerTest {
     void putFile() {
     }
 
+    @Nested
+    @DisplayName("File Controller - deleteFile")
+    class DeleteFileTests {
+
+
+        @Test
+        void deleteFile_WhenNoCredentials_ThenUnauthorized() throws Exception {
+            mvc.perform(delete("/file"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                    .andExpect(jsonPath("$.message").value("Bad credentials"))
+                    .andExpect(jsonPath("$.id").value(1));
+        }
+
+        @Test
+        @WithMockUser(username = "mockUser")
+        void deleteFile_WhenDeleteFile_ThenOK() throws Exception {
+            // given
+            String filename = "fff.json";
+
+            // when
+            var result = mvc.perform(
+                    delete("/file")
+                            .param("filename", filename)
+            );
+
+            // then
+            result.andExpect(status().isOk());
+        }
+
+        @Test
+        @WithMockUser(username = "mockUser")
+        void deleteFile_WhenFileNotFoundFile_ThenBadRequest() throws Exception {
+            // given
+            String filename = "fff.json";
+            doThrow(new FileNotFoundException("File fff.json not found"))
+                    .when(fileService)
+                    .deleteFile(eq(filename));
+
+            // when
+            var result = mvc.perform(
+                    delete("/file")
+                            .param("filename", filename)
+            );
+
+            // then
+            result.andExpect(status().isBadRequest())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                    .andExpect(jsonPath("$.message").value("File fff.json not found"))
+                    .andExpect(jsonPath("$.id").value(3));
+        }
+
+    }
 
     @Nested
     @DisplayName("File Controller - postFile")
     class PostFileTests {
 
         @Test
-        void postFile_WhenNoCredentials_ThenBadRequest() throws Exception {
+        void postFile_WhenNoCredentials_ThenUnauthorized() throws Exception {
             mvc.perform(post("/file"))
                     .andExpect(status().isUnauthorized())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -111,13 +161,12 @@ class FileControllerTest {
 
     }
 
-
     @Nested
     @DisplayName("File Controller - getList")
     class GetListTests {
 
         @Test
-        void getList_WhenNoCredentials_ThenBadRequest() throws Exception {
+        void getList_WhenNoCredentials_ThenUnauthorized() throws Exception {
             mvc.perform(post("/list"))
                     .andExpect(status().isUnauthorized())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
