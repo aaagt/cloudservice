@@ -2,6 +2,7 @@ package aaagt.cloudservice.file.controller;
 
 import aaagt.cloudservice.App;
 import aaagt.cloudservice.file.advice.FileAdvice;
+import aaagt.cloudservice.file.dto.ListResponseFileItemDto;
 import aaagt.cloudservice.file.service.FileService;
 import aaagt.cloudservice.jwt.config.JwtConfig;
 import aaagt.cloudservice.jwt.config.JwtProperties;
@@ -31,16 +32,22 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static aaagt.cloudservice.fixture.MultipartResolver.getMultimap;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -73,10 +80,6 @@ class FileControllerTest {
     private UserRepository userRepository;
     @MockBean
     private UserTokenRepository userTokenRepository;
-
-    @Test
-    void putFile() {
-    }
 
     @Nested
     @DisplayName("File Controller - deleteFile")
@@ -201,6 +204,78 @@ class FileControllerTest {
     }
 
     @Nested
+    @DisplayName("File Controller - putFile")
+    class PutFileTests {
+
+
+        @Test
+        void putFile_WhenNoCredentials_ThenUnauthorized() throws Exception {
+            mvc.perform(put("/file"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                    .andExpect(jsonPath("$.message").value("Bad credentials"))
+                    .andExpect(jsonPath("$.id").value(1));
+        }
+
+        @Test
+        @WithMockUser(username = "mockUser")
+        void putFile_WhenPutFile_ThenOK() throws Exception {
+            // given
+            String filename = "fff.json";
+            String newFilename = "jjj.json";
+            doNothing()
+                    .when(fileService)
+                    .rename(eq(filename), eq(newFilename));
+            var body = """
+                    {
+                    	"name": "%s"
+                    }
+                    """.formatted(newFilename);
+
+            // when
+            var result = mvc.perform(
+                    put("/file")
+                            .param("filename", filename)
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(body)
+            );
+
+            // then
+            result.andExpect(status().isOk());
+        }
+
+        @Test
+        @WithMockUser(username = "mockUser")
+        void putFile_WhenFileNotFoundFile_ThenBadRequest() throws Exception {
+            // given
+            String filename = "fff.json";
+            doThrow(new FileNotFoundException("File fff.json not found"))
+                    .when(fileService)
+                    .rename(eq(filename), any());
+            var body = """
+                    {
+                    	"name": "jjj.json"
+                    }
+                    """;
+
+            // when
+            var result = mvc.perform(
+                    put("/file")
+                            .param("filename", filename)
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(body)
+            );
+
+            // then
+            result.andExpect(status().isBadRequest())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                    .andExpect(jsonPath("$.message").value("File fff.json not found"))
+                    .andExpect(jsonPath("$.id").value(3));
+        }
+
+    }
+
+    @Nested
     @DisplayName("File Controller - postFile")
     class PostFileTests {
 
@@ -245,28 +320,39 @@ class FileControllerTest {
 
         }
 
+        @Test
+        @WithMockUser(username = "mockUser")
+        void getList_WhenGetFile_ThenOK() throws Exception {
+            // given
+            var returnList = List.of(
+                    new ListResponseFileItemDto("file q.txt", 10),
+                    new ListResponseFileItemDto("file 2.json", 34),
+                    new ListResponseFileItemDto("file 4.txt", 567)
+            );
+            String filename = "fff.json";
+            Integer limit = 3;
+            doReturn(returnList)
+                    .when(fileService)
+                    .getList(eq(limit));
+
+
+            // when
+            var result = mvc.perform(
+                    get("/list")
+                            .param("limit", limit.toString())
+            );
+
+            // then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                    .andExpect(jsonPath("$", hasSize(3)))
+                    .andExpect(jsonPath("$[*].filename", containsInAnyOrder("file q.txt", "file 2.json", "file 4.txt")))
+                    .andExpect(jsonPath("$[*].size", containsInAnyOrder(10, 34, 567)));
+
+            result.andExpect(status().isOk());
+        }
+
     }
 
-    // mockMvc.perform(multipart("/doc").file("a1", "ABC".getBytes("UTF-8")));
-
-   /* @Test
-    void 토큰을_생성한다() {
-        //given
-        given(loginService.createToken(any()))
-                .willReturn(TokenResponse.of(accessToken));
-
-        //when
-        TokenRequest params = new TokenRequest(GithubResponses.소롱.getCode());
-        ValidatableMockMvcResponse response = given
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(params)
-                .when().post("/login/token")
-                .then().log().all();
-
-        //then
-        response.expect(status().isOk());
-
-        //docs
-        response.apply(document("login/token"));
-    }*/
 }

@@ -1,5 +1,7 @@
 package aaagt.cloudservice.file.controller;
 
+import aaagt.cloudservice.file.dto.ListResponseFileItemDto;
+import aaagt.cloudservice.file.dto.PutFileRequestDto;
 import aaagt.cloudservice.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -21,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -73,13 +77,15 @@ public class FileController {
     }
 
     @PutMapping("/file")
-    public String putFile() {
-        return "put file";
+    @ResponseStatus(HttpStatus.OK)
+    public void putFile(@RequestParam String filename,
+                        @RequestBody PutFileRequestDto requestDto) throws FileNotFoundException {
+        fileService.rename(filename, requestDto.name());
     }
 
     @GetMapping("/list")
-    public String getList() {
-        return "list files";
+    public List<ListResponseFileItemDto> getList(@RequestParam Integer limit) {
+        return fileService.getList(limit);
     }
 
 }

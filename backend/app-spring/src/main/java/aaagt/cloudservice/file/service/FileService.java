@@ -1,5 +1,6 @@
 package aaagt.cloudservice.file.service;
 
+import aaagt.cloudservice.file.dto.ListResponseFileItemDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -14,6 +15,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -56,5 +58,17 @@ public class FileService {
     public Path load(String filename) {
         Path rootLocation = Paths.get(uploadPath);
         return rootLocation.resolve(filename);
+    }
+
+    public void rename(String fromFilename, String toFilename) throws FileNotFoundException {
+
+    }
+
+    public List<ListResponseFileItemDto> getList(Integer limit) {
+        return List.of(
+                new ListResponseFileItemDto("file q.txt", 10),
+                new ListResponseFileItemDto("file 2.json", 34),
+                new ListResponseFileItemDto("file 4.txt", 567)
+        );
     }
 }
