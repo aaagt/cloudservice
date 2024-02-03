@@ -19,6 +19,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,9 +32,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 
+import static aaagt.cloudservice.fixture.MultipartResolver.getMultimap;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -67,10 +73,6 @@ class FileControllerTest {
     private UserRepository userRepository;
     @MockBean
     private UserTokenRepository userTokenRepository;
-
-    @Test
-    void getFile() {
-    }
 
     @Test
     void putFile() {
@@ -118,6 +120,74 @@ class FileControllerTest {
             // when
             var result = mvc.perform(
                     delete("/file")
+                            .param("filename", filename)
+            );
+
+            // then
+            result.andExpect(status().isBadRequest())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                    .andExpect(jsonPath("$.message").value("File fff.json not found"))
+                    .andExpect(jsonPath("$.id").value(3));
+        }
+
+    }
+
+    @Nested
+    @DisplayName("File Controller - getFile")
+    class GetFileTests {
+
+        @Test
+        void getFile_WhenNoCredentials_ThenUnauthorized() throws Exception {
+            mvc.perform(get("/file"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                    .andExpect(jsonPath("$.message").value("Bad credentials"))
+                    .andExpect(jsonPath("$.id").value(1));
+        }
+
+        @Test
+        @WithMockUser(username = "mockUser")
+        void getFile_WhenGetFile_ThenOK() throws Exception {
+            // given
+            String filename = "fff.json";
+            Resource resource = load("test_file.json");
+            doReturn(resource)
+                    .when(fileService)
+                    .get(eq(filename));
+
+
+            // when
+            var result = mvc.perform(
+                    get("/file")
+                            .param("filename", filename)
+            );
+
+            // then
+            var response = result.andReturn().getResponse();
+            var multimap = getMultimap(response);
+            assertEquals("hash123", multimap.get("hash").get(0).getContentAsString(StandardCharsets.UTF_8));
+            assertEquals("{\"test\":\"test1\"}\n", multimap.get("file").get(0).getContentAsString(StandardCharsets.UTF_8));
+
+            result.andExpect(status().isOk());
+        }
+
+        private Resource load(String filename) {
+            var uri = getClass().getClassLoader().getResource(filename);
+            return new UrlResource(uri);
+        }
+
+        @Test
+        @WithMockUser(username = "mockUser")
+        void getFile_WhenFileNotFoundFile_ThenBadRequest() throws Exception {
+            // given
+            String filename = "fff.json";
+            doThrow(new FileNotFoundException("File fff.json not found"))
+                    .when(fileService)
+                    .get(eq(filename));
+
+            // when
+            var result = mvc.perform(
+                    get("/file")
                             .param("filename", filename)
             );
 
