@@ -15,3 +15,17 @@ docker compose up --build
 ```
 
 2. Сервис будет доступен после запуска по адресу http://localhost
+
+3. Поумолчанию создаются 2 пользователя
+
+```
+login: user
+password: password
+```
+
+и
+
+```
+login: user
+password: password
+```

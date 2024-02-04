@@ -30,6 +30,10 @@ public class FileService {
     private String uploadPath;
 
     public void createFile(String owner, String filename, MultipartFile file, String hash) throws IOException {
+        log.info("Create file {} for user {}, multipart {}, hash {}", filename, owner, file, hash);
+        if (hash == null) {
+            hash = "fdfgd";
+        }
         if (!file.isEmpty()) {
             var storageFileId = "";
             do {
@@ -48,6 +52,7 @@ public class FileService {
     }
 
     public void deleteFile(String owner, String filename) throws FileNotFoundException {
+        log.info("Delete file {} for user {}", filename, owner);
         var entity = fileRepository.findByOwnerAndFilename(owner, filename)
                 .orElseThrow(() -> new FileNotFoundException("File %s of user %s is not found".formatted(filename, owner)));
         fileStorage.delete(entity.getStorageFileId());
@@ -55,6 +60,7 @@ public class FileService {
     }
 
     public GetFileReturnDto get(String owner, String filename) throws FileNotFoundException {
+        log.info("Get file {} for user {}", filename, owner);
         var entity = fileRepository.findByOwnerAndFilename(owner, filename)
                 .orElseThrow(() -> new FileNotFoundException("File %s of user %s is not found".formatted(filename, owner)));
         return new GetFileReturnDto(
@@ -64,6 +70,7 @@ public class FileService {
     }
 
     public void rename(String owner, String fromFilename, String toFilename) throws FileNotFoundException {
+        log.info("Rename file {} to {} for user {}", fromFilename, toFilename, owner);
         var entity = fileRepository.findByOwnerAndFilename(owner, fromFilename)
                 .orElseThrow(() -> new FileNotFoundException("File %s of user %s is not found".formatted(fromFilename, owner)));
         entity.setFilename(toFilename);
@@ -71,6 +78,7 @@ public class FileService {
     }
 
     public List<ListResponseFileItemDto> getList(String owner, Integer limit) {
+        log.info("Get list for user {} with limit {}", owner, limit);
         var pageable = PageRequest.of(0, limit);
         return fileRepository.findAllByOwner(owner, pageable)
                 .map(fileEntity -> new ListResponseFileItemDto(

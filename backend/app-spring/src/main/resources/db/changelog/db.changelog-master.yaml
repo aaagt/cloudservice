@@ -5,3 +5,6 @@ databaseChangeLog:
   - include:
       file: 'migrations/1.0.0/create-security-schema.sql'
       relativeToChangeLogFile: true
+  - include:
+      file: 'migrations/1.0.0/create-file-schema.sql'
+      relativeToChangeLogFile: true

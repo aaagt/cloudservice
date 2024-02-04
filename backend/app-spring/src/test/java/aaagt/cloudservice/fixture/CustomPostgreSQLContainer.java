@@ -38,7 +38,7 @@ public class CustomPostgreSQLContainer {
         dynamicPropertyRegistry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
         dynamicPropertyRegistry.add("spring.datasource.username", postgresqlContainer::getUsername);
         dynamicPropertyRegistry.add("spring.datasource.password", postgresqlContainer::getPassword);
-        dynamicPropertyRegistry.add("spring.datasource.driver-class-name", postgresqlContainer::getDriverClassName);
+        dynamicPropertyRegistry.add("spring.datasource.driver-class-filename", postgresqlContainer::getDriverClassName);
     }
 
 }

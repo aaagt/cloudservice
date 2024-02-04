@@ -37,7 +37,7 @@ public class FileController {
     @PostMapping("/file")
     @ResponseStatus(HttpStatus.OK)
     public void postFile(@RequestParam String filename,
-                         @RequestPart("hash") String hash,
+                         @RequestPart(value = "hash", required = false) String hash,
                          @RequestPart("file") MultipartFile file) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentPrincipalName = authentication.getName();
@@ -74,7 +74,7 @@ public class FileController {
                         @RequestBody PutFileRequestDto requestDto) throws FileNotFoundException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentPrincipalName = authentication.getName();
-        fileService.rename(currentPrincipalName, filename, requestDto.name());
+        fileService.rename(currentPrincipalName, filename, requestDto.filename());
     }
 
     @GetMapping("/list")

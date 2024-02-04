@@ -39,6 +39,5 @@ services:
       - CLOUDSERVICE_DB_NAME=${CLOUDSERVICE_DB_NAME:-cloudservice}
       - CLOUDSERVICE_DB_USERNAME=${CLOUDSERVICE_DB_USERNAME:-postgres}
       - CLOUDSERVICE_DB_PASSWORD=${CLOUDSERVICE_DB_PASSWORD:-postgres}
-#        depends_on:
-#            postgres:
-#                condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads

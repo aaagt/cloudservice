@@ -1,3 +1,3 @@
 package aaagt.cloudservice.file.dto;
 
-public record PutFileRequestDto(String name) {}
+public record PutFileRequestDto(String filename) {}

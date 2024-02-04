@@ -25,7 +25,7 @@ public class LocalFileStorage implements FileStorage {
     public Resource get(String filename) throws FileNotFoundException {
         var filepath = uploadPath + filename;
         try {
-            Path file = load(filepath);
+            Path file = load(filename);
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) {
                 return resource;

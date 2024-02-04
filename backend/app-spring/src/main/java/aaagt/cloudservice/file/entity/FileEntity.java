@@ -28,19 +28,19 @@ public class FileEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false)
+    @Column(name = "owner", nullable = false)
     String owner;
 
-    @Column(nullable = false)
+    @Column(name = "filename", nullable = false)
     String filename;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "storage_file_id", unique = true, nullable = false)
     String storageFileId;
 
-    @Column(nullable = false)
+    @Column(name = "file_hash", nullable = false)
     String fileHash;
 
-    @Column(nullable = false)
+    @Column(name = "file_size", nullable = false)
     Long size;
 
 }
