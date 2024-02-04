@@ -26,6 +26,6 @@ password: password
 и
 
 ```
-login: user
+login: admin
 password: password
 ```
