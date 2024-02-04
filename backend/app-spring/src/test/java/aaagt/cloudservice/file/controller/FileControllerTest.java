@@ -4,6 +4,7 @@ import aaagt.cloudservice.App;
 import aaagt.cloudservice.file.advice.FileAdvice;
 import aaagt.cloudservice.file.dto.ListResponseFileItemDto;
 import aaagt.cloudservice.file.service.FileService;
+import aaagt.cloudservice.file.service.dto.GetFileReturnDto;
 import aaagt.cloudservice.jwt.config.JwtConfig;
 import aaagt.cloudservice.jwt.config.JwtProperties;
 import aaagt.cloudservice.security.config.SecurityConfig;
@@ -85,7 +86,6 @@ class FileControllerTest {
     @DisplayName("File Controller - deleteFile")
     class DeleteFileTests {
 
-
         @Test
         void deleteFile_WhenNoCredentials_ThenUnauthorized() throws Exception {
             mvc.perform(delete("/file"))
@@ -118,7 +118,7 @@ class FileControllerTest {
             String filename = "fff.json";
             doThrow(new FileNotFoundException("File fff.json not found"))
                     .when(fileService)
-                    .deleteFile(eq(filename));
+                    .deleteFile(eq("mockUser"), eq(filename));
 
             // when
             var result = mvc.perform(
@@ -154,9 +154,9 @@ class FileControllerTest {
             // given
             String filename = "fff.json";
             Resource resource = load("test_file.json");
-            doReturn(resource)
+            doReturn(new GetFileReturnDto(resource, "hash123"))
                     .when(fileService)
-                    .get(eq(filename));
+                    .get(eq("mockUser"), eq(filename));
 
 
             // when
@@ -186,7 +186,7 @@ class FileControllerTest {
             String filename = "fff.json";
             doThrow(new FileNotFoundException("File fff.json not found"))
                     .when(fileService)
-                    .get(eq(filename));
+                    .get(eq("mockUser"), eq(filename));
 
             // when
             var result = mvc.perform(
@@ -207,7 +207,6 @@ class FileControllerTest {
     @DisplayName("File Controller - putFile")
     class PutFileTests {
 
-
         @Test
         void putFile_WhenNoCredentials_ThenUnauthorized() throws Exception {
             mvc.perform(put("/file"))
@@ -225,7 +224,7 @@ class FileControllerTest {
             String newFilename = "jjj.json";
             doNothing()
                     .when(fileService)
-                    .rename(eq(filename), eq(newFilename));
+                    .rename(eq("mockUser"), eq(filename), eq(newFilename));
             var body = """
                     {
                     	"name": "%s"
@@ -251,7 +250,7 @@ class FileControllerTest {
             String filename = "fff.json";
             doThrow(new FileNotFoundException("File fff.json not found"))
                     .when(fileService)
-                    .rename(eq(filename), any());
+                    .rename(eq("mockUser"), eq(filename), any());
             var body = """
                     {
                     	"name": "jjj.json"
@@ -295,6 +294,9 @@ class FileControllerTest {
                     "application/json", "{}".getBytes());
             String hash = "123";
             String filename = "fff.json";
+            doNothing()
+                    .when(fileService)
+                    .createFile(eq("mockUser"), eq(filename), any(MockMultipartFile.class), eq(hash));
 
             mvc.perform(multipart("/file")
                             .file("hash", hash.getBytes(StandardCharsets.UTF_8))
@@ -325,15 +327,15 @@ class FileControllerTest {
         void getList_WhenGetFile_ThenOK() throws Exception {
             // given
             var returnList = List.of(
-                    new ListResponseFileItemDto("file q.txt", 10),
-                    new ListResponseFileItemDto("file 2.json", 34),
-                    new ListResponseFileItemDto("file 4.txt", 567)
+                    new ListResponseFileItemDto("file q.txt", 10L),
+                    new ListResponseFileItemDto("file 2.json", 34L),
+                    new ListResponseFileItemDto("file 4.txt", 567L)
             );
             String filename = "fff.json";
             Integer limit = 3;
             doReturn(returnList)
                     .when(fileService)
-                    .getList(eq(limit));
+                    .getList(eq("mockUser"), eq(limit));
 
 
             // when

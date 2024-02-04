@@ -1,74 +1,83 @@
 package aaagt.cloudservice.file.service;
 
 import aaagt.cloudservice.file.dto.ListResponseFileItemDto;
+import aaagt.cloudservice.file.entity.FileEntity;
+import aaagt.cloudservice.file.repository.FileRepository;
+import aaagt.cloudservice.file.service.dto.GetFileReturnDto;
+import aaagt.cloudservice.file.service.storage.FileStorage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FileService {
+
+    private final FileRepository fileRepository;
+
+    private final FileStorage fileStorage;
 
     @Value("${aaagt.cloudservice.files.upload-path}")
     private String uploadPath;
 
-    public void createFile(String filename, MultipartFile file) throws IOException {
-        saveUploadedFile(uploadPath + filename, file);
-    }
-
-    private void saveUploadedFile(String filepath, MultipartFile file) throws IOException {
+    public void createFile(String owner, String filename, MultipartFile file, String hash) throws IOException {
         if (!file.isEmpty()) {
-            new File(filepath).getParentFile().mkdirs();
-            byte[] bytes = file.getBytes();
-            Path path = Paths.get(filepath);
-            Files.write(path, bytes);
+            var storageFileId = "";
+            do {
+                storageFileId = UUID.randomUUID() + "_" + filename;
+            } while (fileStorage.exists(storageFileId));
+            var entity = FileEntity.builder()
+                    .owner(owner)
+                    .fileHash(hash)
+                    .size(file.getSize())
+                    .storageFileId(storageFileId)
+                    .filename(filename)
+                    .build();
+            fileRepository.save(entity);
+            fileStorage.save(storageFileId, file.getBytes());
         }
     }
 
-    public void deleteFile(String filename) throws FileNotFoundException {
-        log.info("deleted");
+    public void deleteFile(String owner, String filename) throws FileNotFoundException {
+        var entity = fileRepository.findByOwnerAndFilename(owner, filename)
+                .orElseThrow(() -> new FileNotFoundException("File %s of user %s is not found".formatted(filename, owner)));
+        fileStorage.delete(entity.getStorageFileId());
+        fileRepository.delete(entity);
     }
 
-    public Resource get(String filename) throws FileNotFoundException {
-        try {
-            Path file = load(filename);
-            Resource resource = new UrlResource(file.toUri());
-            if (resource.exists() || resource.isReadable()) {
-                return resource;
-            } else {
-                throw new FileNotFoundException("Could not read file: " + filename);
-            }
-        } catch (MalformedURLException e) {
-            throw new FileNotFoundException("Could not read file: " + filename);
-        }
-    }
-
-    public Path load(String filename) {
-        Path rootLocation = Paths.get(uploadPath);
-        return rootLocation.resolve(filename);
-    }
-
-    public void rename(String fromFilename, String toFilename) throws FileNotFoundException {
-
-    }
-
-    public List<ListResponseFileItemDto> getList(Integer limit) {
-        return List.of(
-                new ListResponseFileItemDto("file q.txt", 10),
-                new ListResponseFileItemDto("file 2.json", 34),
-                new ListResponseFileItemDto("file 4.txt", 567)
+    public GetFileReturnDto get(String owner, String filename) throws FileNotFoundException {
+        var entity = fileRepository.findByOwnerAndFilename(owner, filename)
+                .orElseThrow(() -> new FileNotFoundException("File %s of user %s is not found".formatted(filename, owner)));
+        return new GetFileReturnDto(
+                fileStorage.get(entity.getStorageFileId()),
+                entity.getFileHash()
         );
     }
+
+    public void rename(String owner, String fromFilename, String toFilename) throws FileNotFoundException {
+        var entity = fileRepository.findByOwnerAndFilename(owner, fromFilename)
+                .orElseThrow(() -> new FileNotFoundException("File %s of user %s is not found".formatted(fromFilename, owner)));
+        entity.setFilename(toFilename);
+        fileRepository.save(entity);
+    }
+
+    public List<ListResponseFileItemDto> getList(String owner, Integer limit) {
+        var pageable = PageRequest.of(0, limit);
+        return fileRepository.findAllByOwner(owner, pageable)
+                .map(fileEntity -> new ListResponseFileItemDto(
+                        fileEntity.getFilename(),
+                        fileEntity.getSize())
+                )
+                .toList();
+    }
+
 }

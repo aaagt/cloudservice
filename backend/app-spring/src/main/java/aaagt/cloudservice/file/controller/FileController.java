@@ -5,10 +5,11 @@ import aaagt.cloudservice.file.dto.PutFileRequestDto;
 import aaagt.cloudservice.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,54 +39,49 @@ public class FileController {
     public void postFile(@RequestParam String filename,
                          @RequestPart("hash") String hash,
                          @RequestPart("file") MultipartFile file) throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
         log.info("Creating file: {}, with hash: {}", filename, hash);
-        fileService.createFile(filename, file);
+        fileService.createFile(currentPrincipalName, filename, file, hash);
     }
 
     @DeleteMapping("/file")
     @ResponseStatus(HttpStatus.OK)
     public void deleteFile(@RequestParam String filename) throws FileNotFoundException {
-        log.info("Deleting file: {}", filename);
-        fileService.deleteFile(filename);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        log.info("Deleting file: {}, of user {}", filename, currentPrincipalName);
+        fileService.deleteFile(currentPrincipalName, filename);
     }
 
     @GetMapping(value = "/file", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MultiValueMap<String, Object>> getFile(@RequestParam String filename) throws FileNotFoundException {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String currentPrincipalName = authentication.getName();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
 
-        Resource file = fileService.get(filename);
-
-        if (file == null) {
-            return ResponseEntity.notFound().build();
-        }
+        var data = fileService.get(currentPrincipalName, filename);
 
         MultiValueMap<String, Object> formData = new LinkedMultiValueMap<String, Object>();
-        formData.add("hash", "hash123");
-//        formData.add("file-data_1", new FileSystemResource("C:\Users\ganesh\img\logo.png"));
-        formData.add("file", file);
-//        formData.add("file-data_5", new FileSystemResource("D:\testxls.xlsx"));
-        return new ResponseEntity<MultiValueMap<String, Object>>(formData, HttpStatus.OK);
+        formData.add("hash", data.hash());
+        formData.add("file", data.file());
 
-
-
-        /*return ResponseEntity
-                .ok()
-                .body(new GetResponseDto("hash123", file));*/
-
-//        return "get file to " + currentPrincipalName;
+        return new ResponseEntity<>(formData, HttpStatus.OK);
     }
 
     @PutMapping("/file")
     @ResponseStatus(HttpStatus.OK)
     public void putFile(@RequestParam String filename,
                         @RequestBody PutFileRequestDto requestDto) throws FileNotFoundException {
-        fileService.rename(filename, requestDto.name());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        fileService.rename(currentPrincipalName, filename, requestDto.name());
     }
 
     @GetMapping("/list")
     public List<ListResponseFileItemDto> getList(@RequestParam Integer limit) {
-        return fileService.getList(limit);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        return fileService.getList(currentPrincipalName, limit);
     }
 
 }
